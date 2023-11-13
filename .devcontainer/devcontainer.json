@@ -26,7 +26,17 @@
 				"Orta.vscode-jest",
 				"firsttris.vscode-jest-runner",
 				"mikestead.dotenv"
-			]
+			],
+			"settings": {
+				"[typescript]": {
+					"editor.formatOnSaveMode": "file",
+					"editor.formatOnSave": true,
+					"editor.defaultFormatter": "esbenp.prettier-vscode",
+					"editor.codeActionsOnSave": {
+							"source.organizeImports": true
+					}
+			}
+			}
 		}
 	}
 
