@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { Application } from './mc/models/link.response';
 
 export interface Apps {
   link: string;
@@ -49,49 +50,44 @@ export class AppController {
   }
 
   @Get('link-1')
-  getNews1(): News[] {
-    return [
-      {
-        id: 1,
-        title: 'News 1',
-        valid: 'valid',
-      },
-      {
-        id: 2,
-        title: 'News 2',
-        valid: 'invalid',
-      },
-      {
-        id: 3,
-        title: 'News 3',
-        valid: 'valid',
-      },
-    ];
+  getNews1(): Application {
+    return {
+      id: '1',
+      scopes: [
+        {
+          id: '1',
+          approved: 'approved',
+        },
+        {
+          id: '2',
+          approved: 'not-approved',
+        },
+        {
+          id: '3',
+          approved: 'approved',
+        },
+      ],
+    };
   }
 
   @Get('link-2')
-  getNews2(): News[] {
-    return [
-      {
-        id: 4,
-        title: 'News 4',
-        valid: 'valid',
-      },
-      {
-        id: 5,
-        title: 'News 5',
-        valid: 'valid',
-      },
-      {
-        id: 6,
-        title: 'News 6',
-        valid: 'invalid',
-      },
-      {
-        id: 7,
-        title: 'News 7',
-        valid: 'invalid',
-      },
-    ];
+  getNews2(): Application {
+    return {
+      id: '2',
+      scopes: [
+        {
+          id: '4',
+          approved: 'approved',
+        },
+        {
+          id: '5',
+          approved: 'not-approved',
+        },
+        {
+          id: '6',
+          approved: 'approved',
+        },
+      ],
+    };
   }
 }

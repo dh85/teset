@@ -6,7 +6,7 @@ export class MCController {
   constructor(private readonly service: MCService) {}
 
   @Get(':appId')
-  getAppsForValidIdsWithAppId(@Param('appId') appId: string) {
-    return this.service.getLinksForGroupsWithAppId(appId);
+  getLinksForGroupsWithAppId(@Param('appId') appId: string) {
+    return this.service.getValidAppsWithAppId(appId);
   }
 }

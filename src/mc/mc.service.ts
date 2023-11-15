@@ -1,66 +1,60 @@
-import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { AxiosError } from 'axios';
-import { Observable, catchError, concatMap, forkJoin, map } from 'rxjs';
-import { LinkResponse } from './models/link.response';
+import axios from 'axios';
+import { GroupResponse } from './models/group.response';
+import { Application } from './models/link.response';
 
 @Injectable()
 export class MCService {
-  constructor(private httpService: HttpService) {}
+  async getValidAppsWithAppId(appId: string) {
+    const links = await this.getGroupsForAppId(appId);
+    return await this.getGroupsForLinks(links);
+  }
 
-  getLinksForGroupsWithAppId(appId: string): Observable<LinkResponse[][]> {
-    return this.getAppGroupsWithAppId(appId).pipe(
-      map((linksArray) => linksArray.map((link) => this.getLinks(link))),
-      concatMap((arrayOfObservables) => forkJoin(arrayOfObservables)),
-      catchError((error: AxiosError) => {
-        console.log('Got an error up in here!', error.response.data);
-        throw 'An error happened!';
-      }),
+  private async getGroupsForAppId(appId: string) {
+    const { data } = await axios.get<GroupResponse[]>(
+      `http://localhost:3000/groups/${appId.toUpperCase()}`,
+    );
+    if (data.length === 0) throw new Error(`AppID (${appId}) was invalid`);
+    return data;
+  }
+
+  private async getGroupsForLinks(groups: GroupResponse[]) {
+    return await Promise.all(
+      groups.map(async (group) => this.getAppForLink(group.link)),
     );
   }
 
-  private getLinks(link: string): Observable<LinkResponse[]> {
-    return this.httpService
-      .get(`http://localhost:3000${link}`)
-      .pipe(map((res) => res.data.filter((app) => app.valid == 'valid')));
-  }
-
-  private getAppGroupsWithAppId(appId: string): Observable<string[]> {
-    return this.httpService
-      .get(`http://localhost:3000/groups/${appId.toUpperCase()}`)
-      .pipe(map((res) => res.data.map((group) => group.link)));
+  private async getAppForLink(link: string) {
+    const { data } = await axios.get<Application>(
+      `http://localhost:3000${link}`,
+    );
+    data.scopes = data.scopes.filter((scope) => scope.approved === 'approved');
+    return data;
   }
 }
 
-// async getValidAppsWithAppId(appId: string) {
-//   const links = await this.getGroupsForAppId(appId);
-//   const validApps = await this.getGroupsForLinks(links);
-//   return validApps;
-// }
-
-// private async getGroupsForAppId(appId: string) {
-//   const { data } = await this.httpService.axiosRef({
-//     url: `http://localhost:3000/groups/${appId.toUpperCase()}`,
-//     method: 'GET',
-//   });
-//   return [data].map((group) => group.link);
-// }
-
-// private async getGroupsForLinks(links: string[]) {
-//   return await Promise.all(
-//     links.map(async (link) => {
-//       return this.getAppForLink(link);
+// getLinksForGroupsWithAppId(appId: string): Observable<Application[][]> {
+//   return this.getAppGroupsWithAppId(appId).pipe(
+//     map((linksArray) => linksArray.map((link) => this.getLinks(link))),
+//     concatMap((arrayOfObservables) => forkJoin(arrayOfObservables)),
+//     catchError((error) => {
+//       console.error('An error occurred:', error.response.data);
+//       throw 'An error happened!';
 //     }),
 //   );
 // }
 
-// private async getAppForLink(link: string) {
-//   const { data } = await this.httpService.axiosRef.get<LinkResponse[]>(
-//     `http://localhost:3000${link}`,
-//   );
-//   return data.filter((app) => app.valid === 'valid');
+// private getLinks(link: string): Observable<Application[]> {
+//   return this.httpService
+//     .get(`http://localhost:3000${link}`)
+//     .pipe(map((res) => res.data.filter((app) => app.valid === 'valid')));
 // }
 
+// private getAppGroupsWithAppId(appId: string): Observable<string[]> {
+//   return this.httpService
+//     .get(`http://localhost:3000/groups/${appId.toUpperCase()}`)
+//     .pipe(map((res) => res.data.map((group) => group.link)));
+// }
 // // private async getAppForLink(link: string): Promise<LinkResponse[]> {
 // //   return this.httpService.axiosRef
 // //     .get(`http://localhost:3000${link}`)
